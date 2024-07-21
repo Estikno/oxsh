@@ -1,10 +1,10 @@
-use std::process::{Child, Command, Stdio};
+use crate::commands::{cd, help};
 use anyhow::Result;
-use crate::commands::cd;
+use std::process::{Child, Command, Stdio};
 
 pub enum ShellStatus {
     Continue,
-    Exit
+    Exit,
 }
 
 pub fn shell_logic(input: &String) -> Result<ShellStatus> {
@@ -13,12 +13,14 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
     let mut previous_command = None;
 
     while let Some(command) = commands.next() {
-        // everything after the first whitespace character 
+        // everything after the first whitespace character
         //     is interpreted as args to the command
         let mut parts = command.trim().split_ascii_whitespace();
         let command = match parts.next() {
             Some(command) => command,
-            None => { return Ok(ShellStatus::Continue); },  // breaks if no command provided
+            None => {
+                return Ok(ShellStatus::Continue);
+            } // breaks if no command provided
         };
         let args = parts;
 
@@ -26,21 +28,19 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
             "cd" => {
                 cd(args);
                 previous_command = None;
-            },
+            }
+            "help" => help(),
             "exit" => return Ok(ShellStatus::Exit),
             command => {
-                let stdin = previous_command
-                    .map_or(
-                        Stdio::inherit(),
-                        |output: Child| Stdio::from(output.stdout.unwrap())
-                    );
-                
+                let stdin = previous_command.map_or(Stdio::inherit(), |output: Child| {
+                    Stdio::from(output.stdout.unwrap())
+                });
+
                 let stdout = if commands.peek().is_some() {
                     // there is another command piped behind this one
                     // prepare to send output to the next command
                     Stdio::piped()
-                }
-                else{
+                } else {
                     // there are no more commands piped behind this one
                     // send output to shell stdout
                     Stdio::inherit()
@@ -53,7 +53,9 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
                     .spawn();
 
                 match output {
-                    Ok(output) => { previous_command = Some(output); },
+                    Ok(output) => {
+                        previous_command = Some(output);
+                    }
                     Err(e) => {
                         previous_command = None;
                         eprintln!("{}", e);

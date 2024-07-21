@@ -6,14 +6,12 @@ use oxsh::{
 };
 
 fn main() -> Result<()> {
-    let mut handle = io::stdin().lock();
-
     loop {
         //print prompt, the graphical representation
         prompt::print_prompt()?;
 
         //read user input
-        let input = prompt::read_input(&mut handle)?;
+        let input = prompt::read_input()?;
 
         //main logic
         match shell::shell_logic(&input)? {

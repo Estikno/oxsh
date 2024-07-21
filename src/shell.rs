@@ -8,6 +8,9 @@ pub enum ShellStatus {
 }
 
 pub fn shell_logic(input: &String) -> Result<ShellStatus> {
+    //update the last shell command
+    println!("> {}", input);
+
     // must be peekable so we know when we are on the last command
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;

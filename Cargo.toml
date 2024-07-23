@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
 anyhow = { version = "1.0" }
-termion = "4.0.2"
+rustyline = "14.0.0"

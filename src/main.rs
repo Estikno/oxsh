@@ -1,17 +1,17 @@
 use anyhow::Result;
-use std::io;
 use oxsh::{
     prompt,
     shell::{self, ShellStatus},
 };
 
-fn main() -> Result<()> {
-    loop {
-        //print prompt, the graphical representation
-        prompt::print_prompt()?;
+use rustyline::DefaultEditor;
 
+fn main() -> Result<()> {
+    let mut rl = DefaultEditor::new()?;
+
+    loop {
         //read user input
-        let input = prompt::read_input()?;
+        let input = prompt::read_input(&mut rl)?;
 
         //main logic
         match shell::shell_logic(&input)? {

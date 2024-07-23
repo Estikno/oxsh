@@ -24,8 +24,8 @@ pub fn read_input() -> Result<String> {
     let cursor_pos = stdout.cursor_pos()?;
     let mut index: usize = 0;
     
-    write!(stdout, "{}", cursor::Hide);
-    write!(stdout, "{}", cursor::Goto(0, cursor_pos.1));
+    write!(stdout, "{}", cursor::Hide)?;
+    write!(stdout, "{}", cursor::Goto(0, cursor_pos.1))?;
     stdout.flush()?;
 
     for k in stdin.keys(){
@@ -34,17 +34,25 @@ pub fn read_input() -> Result<String> {
             Key::Char(c) => {
                 input.insert(index, c);
                 index += 1;
-                write!(stdout, "{}{}{}", termion::clear::CurrentLine, "> ", input);
-                write!(stdout, "{}", cursor::Goto(0, cursor_pos.1));
-            }
-            _ => {
-                
-            }
+
+                write!(stdout, "{}{}{}{}", termion::clear::CurrentLine, "> ", input, "▉")?;
+                write!(stdout, "{}", cursor::Goto(0, cursor_pos.1))?;
+            },
+            Key::Backspace => {
+                if index > 0 {
+                    input.remove(index - 1);
+                    index -= 1;
+
+                    write!(stdout, "{}{}{}{}", termion::clear::CurrentLine, "> ", input, "▉")?;
+                    write!(stdout, "{}", cursor::Goto(0, cursor_pos.1))?;
+                }
+            },
+            _ => ()
         }
         stdout.flush()?;
     }
 
-    write!(stdout, "{}", cursor::Show);
+    write!(stdout, "{}{}", cursor::Show, termion::clear::CurrentLine)?;
     stdout.flush()?;
 
     Ok(input)

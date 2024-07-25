@@ -1,63 +1,44 @@
-use crate::commands::{cd, help};
+use crate::commands::{cd, help, CommandType};
 use anyhow::Result;
-use std::{process::{Child, Command, Stdio}, str::SplitAsciiWhitespace};
+use std::{
+    process::{Child, Command, Stdio},
+    str::SplitAsciiWhitespace,
+};
 
 pub enum ShellStatus {
     Continue,
     Exit,
 }
 
+/// Executes a series of commands with pipes between them.
+///
+/// # Arguments
+///
+/// * `input` - A string containing the commands to be executed
+///
+/// # Returns
+///
+/// * `Result<ShellStatus>` - The status of the shell after executing the commands.
 pub fn shell_logic(input: &String) -> Result<ShellStatus> {
     // must be peekable so we know when we are on the last command
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;
-
     while let Some(command) = commands.next() {
         // everything after the first whitespace character
         //     is interpreted as args to the command
         let (command, args) = match parse_command(command) {
             Some((command, args)) => (command, args),
-            None => return Ok(ShellStatus::Continue)
+            None => return Ok(ShellStatus::Continue), // empty command
         };
-
-        match command {
-            "cd" => {
-                cd(args);
-                previous_command = None;
-            }
-            "help" => help(),
-            "exit" => return Ok(ShellStatus::Exit),
-            command => {
-                let stdin = previous_command.map_or(Stdio::inherit(), |output: Child| {
-                    Stdio::from(output.stdout.unwrap())
-                });
-
-                let stdout = if commands.peek().is_some() {
-                    // there is another command piped behind this one
-                    // prepare to send output to the next command
-                    Stdio::piped()
-                } else {
-                    // there are no more commands piped behind this one
-                    // send output to shell stdout
-                    Stdio::inherit()
-                };
-
-                let output = Command::new(command)
-                    .args(args)
-                    .stdin(stdin)
-                    .stdout(stdout)
-                    .spawn();
-
-                match output {
-                    Ok(output) => {
-                        previous_command = Some(output);
-                    }
-                    Err(e) => {
-                        previous_command = None;
-                        eprintln!("{}", e);
-                    }
-                };
-            }
+        let com_type = CommandType::from_str(command);
+        let result = execute_command(
+            com_type,
+            args,
+            &mut previous_command,
+            commands.peek().is_some(), // are there more commands to execute?
+        );
+        if let ShellStatus::Exit = result {
+            return Ok(ShellStatus::Exit);
         }
     }
 
@@ -67,6 +48,82 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
     }
 
     Ok(ShellStatus::Continue)
+}
+
+
+/// Executes a command based on its type.
+///
+/// # Arguments
+///
+/// * `com_type` - The type of the command.
+/// * `args` - The arguments passed to the command.
+/// * `previous_command` - A mutable reference to the previous command.
+/// * `has_next` - A boolean indicating if there are more commands to execute.
+///
+/// # Returns
+///
+/// * `ShellStatus::Continue` - If the command is executed successfully.
+/// * `ShellStatus::Exit` - If the command is the exit command.
+fn execute_command(
+    com_type: CommandType,
+    args: SplitAsciiWhitespace,
+    previous_command: &mut Option<Child>,
+    has_next: bool,
+) -> ShellStatus {
+    // Execute the command based on its type.
+    match com_type {
+        CommandType::CD => {
+            // Execute the 'cd' command.
+            cd(args);
+            *previous_command = None;
+        }
+        CommandType::Help => {
+            // Execute the 'help' command.
+            help();
+        }
+        CommandType::Exit => {
+            // If the command is the exit command, return ShellStatus::Exit.
+            return ShellStatus::Exit;
+        }
+        CommandType::External(command) => {
+            // Execute an external command.
+            let stdin = previous_command
+                .take()
+                .map_or(Stdio::inherit(), |output: Child| {
+                    // Set the stdin of the new command to the output of the previous command.
+                    Stdio::from(output.stdout.unwrap())
+                });
+
+            let stdout = if has_next {
+                // If there are more commands to execute, set the stdout to a piped stream.
+                Stdio::piped()
+            } else {
+                // Otherwise, set the stdout to the inherited stream.
+                Stdio::inherit()
+            };
+
+            let output = Command::new(command)
+                .args(args)
+                .stdin(stdin)
+                .stdout(stdout)
+                .spawn();
+
+            match output {
+                Ok(output) => {
+                    // Set the previous command to the new output.
+                    *previous_command = Some(output);
+                }
+                Err(e) => {
+                    // If there is an error, print the error and reset the previous command.
+                    *previous_command = None;
+                    eprintln!("{}", e);
+                }
+            };
+        }
+    }
+
+    // Return ShellStatus::Continue if the command is executed successfully.
+    ShellStatus::Continue
 }
 
 /// Parses a command from a given input string.
@@ -121,7 +178,7 @@ mod tests {
         let expected_args: Vec<&str> = vec![];
 
         let result = parse_command(input).unwrap();
-        
+
         assert_eq!(result.0, expected_command);
         assert_eq!(result.1.collect::<Vec<&str>>(), expected_args);
     }
@@ -129,6 +186,7 @@ mod tests {
     #[test]
     fn test_parse_command_with_no_command() {
         let input = "";
-        assert_eq!(parse_command(input).is_none(), true);
+
+        assert!(parse_command(input).is_none())
     }
 }

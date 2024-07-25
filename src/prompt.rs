@@ -8,7 +8,6 @@ fn get_prompt() -> String {
     String::from("> ")
 }
 
-
 /// Reads user input from the console using the rustyline library
 ///
 /// # Arguments
@@ -26,7 +25,7 @@ pub fn read_input(rl: &mut Editor<(), rustyline::history::FileHistory>) -> Resul
         Ok(input) => {
             rl.add_history_entry(input.as_str())?;
             Ok(input)
-        },
+        }
         // If there was an error reading the input, print the error and return an empty String
         Err(err) => {
             println!("Error: {:?}", err);

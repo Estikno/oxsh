@@ -1,9 +1,6 @@
 use crate::commands::{cd, help, CommandType};
 use anyhow::Result;
-use std::{
-    process::{Child, Command, Stdio},
-    str::SplitAsciiWhitespace,
-};
+use std::process::{Child, Command, Stdio};
 
 pub enum ShellStatus {
     Continue,
@@ -23,6 +20,7 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
     // must be peekable so we know when we are on the last command
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;
+
     while let Some(command) = commands.next() {
         // everything after the first whitespace character
         //     is interpreted as args to the command
@@ -30,10 +28,9 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
             Some((command, args)) => (command, args),
             None => return Ok(ShellStatus::Continue), // empty command
         };
-        let com_type = CommandType::from_str(command);
+        let com_type = CommandType::from_str(command, args);
         let result = execute_command(
             com_type,
-            args,
             &mut previous_command,
             commands.peek().is_some(), // are there more commands to execute?
         );
@@ -66,13 +63,12 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
 /// * `ShellStatus::Exit` - If the command is the exit command.
 fn execute_command(
     com_type: CommandType,
-    args: SplitAsciiWhitespace,
     previous_command: &mut Option<Child>,
     has_next: bool,
 ) -> ShellStatus {
     // Execute the command based on its type.
     match com_type {
-        CommandType::CD => {
+        CommandType::CD(args) => {
             // Execute the 'cd' command.
             cd(args);
             *previous_command = None;
@@ -85,7 +81,7 @@ fn execute_command(
             // If the command is the exit command, return ShellStatus::Exit.
             return ShellStatus::Exit;
         }
-        CommandType::External(command) => {
+        CommandType::External(command, args) => {
             // Execute an external command.
             let stdin = previous_command
                 .take()
@@ -136,7 +132,7 @@ fn execute_command(
 ///
 /// * `Some((command, args))` - A tuple containing the command and the arguments.
 /// * `None` - If no command is provided in the input string.
-fn parse_command(input: &str) -> Option<(&str, SplitAsciiWhitespace)> {
+fn parse_command(input: &str) -> Option<(&str, Vec<String>)> {
     // Split the input string into parts separated by whitespace characters.
     let mut parts = input.trim().split_ascii_whitespace();
 
@@ -149,7 +145,7 @@ fn parse_command(input: &str) -> Option<(&str, SplitAsciiWhitespace)> {
     };
 
     // Collect the remaining parts as the arguments.
-    let args: SplitAsciiWhitespace = parts;
+    let args: Vec<String> = parts.map(|s| s.to_string()).collect();
 
     // Return the command and arguments as a tuple.
     Some((command, args))
@@ -163,24 +159,24 @@ mod tests {
     fn test_parse_command_with_command_and_args() {
         let input = "ls -l";
         let expected_command = "ls";
-        let expected_args: Vec<&str> = vec!["-l"];
+        let expected_args: Vec<String> = vec![String::from("-l")];
 
         let result = parse_command(input).unwrap();
 
         assert_eq!(result.0, expected_command);
-        assert_eq!(result.1.collect::<Vec<&str>>(), expected_args);
+        assert_eq!(result.1, expected_args);
     }
 
     #[test]
     fn test_parse_command_with_command_only() {
         let input = "ls";
         let expected_command = "ls";
-        let expected_args: Vec<&str> = vec![];
+        let expected_args: Vec<String> = vec![];
 
         let result = parse_command(input).unwrap();
 
         assert_eq!(result.0, expected_command);
-        assert_eq!(result.1.collect::<Vec<&str>>(), expected_args);
+        assert_eq!(result.1, expected_args);
     }
 
     #[test]

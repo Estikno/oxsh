@@ -2,19 +2,19 @@ use std::{env, path::Path};
 
 // TODO: Add arguments to each command that needs it. Lifetimes are needed for args.
 pub enum CommandType {
-    CD,
+    CD(Vec<String>),
     Help,
     Exit,
-    External(String),
+    External(String, Vec<String>),
 }
 
 impl CommandType {
-    pub fn from_str(command: &str) -> CommandType {
+    pub fn from_str(command: &str, args: Vec<String>) -> CommandType {
         match command {
-            "cd" => CommandType::CD,
+            "cd" => CommandType::CD(args),
             "help" => CommandType::Help,
             "exit" => CommandType::Exit,
-            com => CommandType::External(com.to_string()),
+            com => CommandType::External(com.to_string(), args),
         }
     }
 }
@@ -26,9 +26,9 @@ impl CommandType {
 /// * `args` - An iterator over the arguments passed to the `cd` command.
 ///            The function expects at most one argument, which is the directory to change to.
 ///            If no argument is provided, the function defaults to the root directory.
-pub fn cd(args: std::str::SplitAsciiWhitespace) {
+pub fn cd(args: Vec<String>) {
     // Check if the number of arguments is greater than one
-    if args.clone().count() > 1 {
+    if args.len() > 1 {
         // If there are too many arguments, print an error message and return
         eprintln!("cd: too many arguments");
         return;
@@ -37,7 +37,7 @@ pub fn cd(args: std::str::SplitAsciiWhitespace) {
     // Use peekable() to get an iterator over the arguments
     // Use peek() to get the first argument (if any)
     // Use map_or() to provide a default value ("/") if no argument is provided
-    let new_dir = args.peekable().peek().map_or("/", |x| *x);
+    let new_dir = args.iter().peekable().peek().map_or("/", |x| *x);
     // Create a Path object from the new directory
     let root = Path::new(new_dir);
 
@@ -49,12 +49,12 @@ pub fn cd(args: std::str::SplitAsciiWhitespace) {
 }
 
 pub fn help() {
-    println!("                              _____  ______  _   _");
-    println!("                             / _ \\ \\/ / ___|| | | |");
-    println!("                            | | | \\  /\\___ \\| |_| |");
-    println!("                            | |_| /  \\ ___) |  _  |");
-    println!("                             \\___/_/\\_\\____/|_| |_|");
-    println!("                                                   ");
+    println!("  _____  ______  _   _");
+    println!(" / _ \\ \\/ / ___|| | | |");
+    println!("| | | \\  /\\___ \\| |_| |");
+    println!("| |_| /  \\ ___) |  _  |");
+    println!(" \\___/_/\\_\\____/|_| |_|");
+    println!("");
     println!("oxsh - a minimalist shell");
     println!("");
     println!("Built-in commands:");

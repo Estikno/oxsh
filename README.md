@@ -52,7 +52,7 @@
 
 <!--[![Product Name Screen Shot][product-screenshot]](https://example.com)-->
 
-`oxsh` is a lightweight shell written in Rust, created with the objective of mastering the language and exploring its full capabilities. Having extensively used various shells and command-line tools, I often found myself curious about their inner workings. This project aims to demystify the complexities behind these tools.
+`oxsh` is a lightweight UNIX shell written in Rust, created with the objective of mastering the language and exploring its full capabilities. Having extensively used various shells and command-line tools, I often found myself curious about their inner workings. This project aims to demystify the complexities behind these tools.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

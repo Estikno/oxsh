@@ -10,7 +10,7 @@
   <h1 align="center">oxsh</h1>
 
   <p align="center">
-    A lightweight and customizable shell written in Rust for a modern and efficient command line experience
+    A lightweight and customizable shell written in Rust
     <!--<br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
     <br />
@@ -52,15 +52,7 @@
 
 <!--[![Product Name Screen Shot][product-screenshot]](https://example.com)-->
 
-`oxsh` is a lightweight and customizable shell written in Rust, designed to offer a modern and efficient command line experience. 
-This project aims to combine the robustness and safety features of Rust with the flexibility needed for a powerful shell environment. 
-Whether you're a developer looking for a more efficient workflow or a system administrator in need of a reliable shell, oxsh is built to meet your needs with 
-speed and stability.
-
-Key Features:
-* Performance: Leveraging Rust's performance capabilities for a fast and responsive shell.
-* Safety: Ensuring memory safety and reducing bugs with Rust's strong typing and ownership model.
-* Customizability: Easily configurable to fit your specific workflow and preferences.
+`oxsh` is a lightweight shell written in Rust, created with the objective of mastering the language and exploring its full capabilities. Having extensively used various shells and command-line tools, I often found myself curious about their inner workings. This project aims to demystify the complexities behind these tools.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

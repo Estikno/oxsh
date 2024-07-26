@@ -34,6 +34,7 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
             &mut previous_command,
             commands.peek().is_some(), // are there more commands to execute?
         );
+        
         if let ShellStatus::Exit = result {
             return Ok(ShellStatus::Exit);
         }

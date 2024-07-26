@@ -1,24 +1,5 @@
 use std::{env, path::Path};
 
-// TODO: Add arguments to each command that needs it. Lifetimes are needed for args.
-pub enum CommandType {
-    CD(Vec<String>),
-    Help,
-    Exit,
-    External(String, Vec<String>),
-}
-
-impl CommandType {
-    pub fn from_str(command: &str, args: Vec<String>) -> CommandType {
-        match command {
-            "cd" => CommandType::CD(args),
-            "help" => CommandType::Help,
-            "exit" => CommandType::Exit,
-            com => CommandType::External(com.to_string(), args),
-        }
-    }
-}
-
 /// Changes the current working directory.
 ///
 /// # Arguments
@@ -46,19 +27,4 @@ pub fn cd(args: Vec<String>) {
     if let Err(e) = env::set_current_dir(&root) {
         eprintln!("{}", e);
     }
-}
-
-pub fn help() {
-    println!("  _____  ______  _   _");
-    println!(" / _ \\ \\/ / ___|| | | |");
-    println!("| | | \\  /\\___ \\| |_| |");
-    println!("| |_| /  \\ ___) |  _  |");
-    println!(" \\___/_/\\_\\____/|_| |_|");
-    println!("");
-    println!("oxsh - a minimalist shell");
-    println!("");
-    println!("Built-in commands:");
-    println!("cd <directory>: Change the current directory");
-    println!("help: Display this help message");
-    println!("exit: Exit the shell");
 }

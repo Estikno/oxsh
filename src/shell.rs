@@ -1,6 +1,7 @@
-use crate::commands::{cd, help, CommandType};
+use crate::commands::{cd, help, CommandType, history};
 use anyhow::Result;
 use std::process::{Child, Command, Stdio};
+use rustyline::Editor;
 
 pub enum ShellStatus {
     Continue,
@@ -16,7 +17,7 @@ pub enum ShellStatus {
 /// # Returns
 ///
 /// * `Result<ShellStatus>` - The status of the shell after executing the commands.
-pub fn shell_logic(input: &String) -> Result<ShellStatus> {
+pub fn shell_logic(input: &String, editor: &mut Editor<(), rustyline::history::FileHistory>) -> Result<ShellStatus> {
     // must be peekable so we know when we are on the last command
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;
@@ -28,11 +29,13 @@ pub fn shell_logic(input: &String) -> Result<ShellStatus> {
             Some((command, args)) => (command, args),
             None => return Ok(ShellStatus::Continue), // empty command
         };
+        
         let com_type = CommandType::from_str(command, args);
         let result = execute_command(
             com_type,
             &mut previous_command,
             commands.peek().is_some(), // are there more commands to execute?
+            editor
         );
         
         if let ShellStatus::Exit = result {
@@ -66,6 +69,7 @@ fn execute_command(
     com_type: CommandType,
     previous_command: &mut Option<Child>,
     has_next: bool,
+    editor: &mut Editor<(), rustyline::history::FileHistory>,
 ) -> ShellStatus {
     // Execute the command based on its type.
     match com_type {
@@ -77,6 +81,9 @@ fn execute_command(
         CommandType::Help => {
             // Execute the 'help' command.
             help();
+        }
+        CommandType::History(args) => {
+            history(args, editor);
         }
         CommandType::Exit => {
             // If the command is the exit command, return ShellStatus::Exit.

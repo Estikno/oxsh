@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let mut rl = Editor::with_config(rustyline_config)?;
 
     if rl.load_history(path_history_file.as_str()).is_err() {
-        println!("No previous history file, creating a new one...")
+        println!("No previous history file, creating a new one once the shell closes...")
     }
 
     loop {
@@ -28,7 +28,7 @@ fn main() -> Result<()> {
         let input = prompt::read_input(&mut rl)?;
 
         //main logic
-        match shell::shell_logic(&input)? {
+        match shell::shell_logic(&input, &mut rl)? {
             ShellStatus::Continue => continue,
             ShellStatus::Exit => break,
         }

@@ -1,28 +1,21 @@
+//Our mods
+pub mod commands;
+pub mod prompt;
+pub mod shell;
+pub mod utils;
+
+use crate::utils::get_history_path;
+use crate::shell::ShellStatus;
+
 use anyhow::Result;
 
-use oxsh::utils::get_history_path;
-use oxsh::{
-    prompt,
-    shell::{self, ShellStatus},
-};
-
-use rustyline::Editor;
-
 fn main() -> Result<()> {
-    let rustyline_config = rustyline::config::Builder::new()
-        .max_history_size(100)?
-        .build();
-
-    println!("Welcome to oxsh");
-    println!("Type 'exit' to quit.");
-
     let path_history_file = get_history_path();
-    let mut rl = Editor::with_config(rustyline_config)?;
+    let mut rl = utils::initialize_rustyline_editor(&path_history_file)?;
 
-    if rl.load_history(path_history_file.as_str()).is_err() {
-        println!("No previous history file, creating a new one once the shell closes...")
-    }
+    utils::read_init_script();
 
+    //REPL LOOP
     loop {
         //read user input
         let user_input = prompt::read_input(&mut rl);

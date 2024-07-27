@@ -8,7 +8,8 @@ pub fn help() {
     println!("oxsh - a minimalist shell");
     println!("");
     println!("Built-in commands:");
-    println!("cd <directory>: Change the current directory");
-    println!("help: Display this help message");
-    println!("exit: Exit the shell");
+    println!("- cd <directory>: Change the current directory");
+    println!("- history [--clear | -c] [--rewrite | -r] [--write | -w] [--save | -s <command>]: manages the command history");
+    println!("- help: Display this help message");
+    println!("- exit: Exit the shell");
 }

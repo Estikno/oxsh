@@ -25,12 +25,14 @@ fn main() -> Result<()> {
 
     loop {
         //read user input
-        let input = prompt::read_input(&mut rl)?;
+        let user_input = prompt::read_input(&mut rl);
 
-        //main logic
-        match shell::shell_logic(&input, &mut rl)? {
-            ShellStatus::Continue => continue,
-            ShellStatus::Exit => break,
+        if let Some(input) = user_input {
+            //main logic
+            match shell::shell_logic(&input, &mut rl)? {
+                ShellStatus::Continue => continue,
+                ShellStatus::Exit => break,
+            }   
         }
     }
 

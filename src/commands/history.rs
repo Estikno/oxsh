@@ -40,31 +40,47 @@ impl HistoryArgs {
     }
 }
 
+/// Handles the `history` command.
+///
+/// # Arguments
+///
+/// * `args` - The arguments passed to the `history` command.
+/// * `editor` - A mutable reference to the `Editor` object.
 pub fn history(args: HistoryArgs, editor: &mut Editor<(), rustyline::history::FileHistory>) {
+    // Get the path to the history file.
     let path_history_file = get_history_path();
     let path_history_file = path_history_file.as_str();
 
     match args {
+        // Clear the history in memory.
         HistoryArgs::Clear => {
+            eprintln!("Clearing history in memory...");
             if editor.clear_history().is_err() {
-                println!("There was an error clearing the history in memory!")
+                println!("There was an error clearing the history in memory!");
             }
         },
+        // Load the history from the history file.
         HistoryArgs::Rewrite => {
+            eprintln!("Loading history from the history file...");
             if editor.load_history(path_history_file).is_err() {
                 println!("The history file does not exist! This might be because you tried to use the --rewrite option before closing the shell, which creates the history file.");
             }
         },
+        // Save the history to the history file.
         HistoryArgs::Write => {
+            eprintln!("Saving history to the history file...");
             if editor.save_history(path_history_file).is_err() {
-                eprintln!("Failed to write to the history file!")
+                eprintln!("Failed to write to the history file!");
             }
         },
+        // Save a command to the history without executing it.
         HistoryArgs::Save(command) => {
+            eprintln!("Saving command to the history...");
             if editor.add_history_entry(command).is_err() {
-                eprintln!("Failed to add command to the history!")
+                eprintln!("Failed to add command to the history!");
             }
         },
+        // Print the error message if incorrect usage.
         HistoryArgs::Error(e) => println!("{}", e),
     }
 }

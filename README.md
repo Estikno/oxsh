@@ -59,20 +59,37 @@
 
 
 <!-- Installation -->
-<!--## Installation
+## Installation
 
-This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 
+Download the install.sh script and give executable persmision
+```sh
+wget https://github.com/Estikno/oxsh/releases/download/0.1.0/install.sh
+chmod +x install.sh
+```
+
+Now execute the script. Which will download the shell and its necessary components.
+```sh
+./install.sh
+```
+
+Go to your home directory and excecute the **oxsh** file and that's it.
+```sh
+cd ~
+./oxsh
+```
+
+<!--
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
 * npm
   ```sh
   npm install npm@latest -g
-  ```
+  ```-->
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>-->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
